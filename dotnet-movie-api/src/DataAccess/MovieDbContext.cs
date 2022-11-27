@@ -9,6 +9,7 @@ public partial class MovieDbContext : DbContext
 {
     public MovieDbContext()
     {
+            
     }
 
     public MovieDbContext(DbContextOptions<MovieDbContext> options)
@@ -27,14 +28,16 @@ public partial class MovieDbContext : DbContext
     public virtual DbSet<Person> Persons { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=movieDb;Trusted_Connection=True");
+    {
+        var builder = WebApplication.CreateBuilder();
+        optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Cast>(entity =>
         {
-            entity.HasNoKey();
+            entity.HasKey(e => e.MovieId).HasName("PK__Casts__42EB372EDAA0394D");
 
             entity.Property(e => e.Character)
                 .HasMaxLength(30)
@@ -137,7 +140,6 @@ public partial class MovieDbContext : DbContext
             entity.Property(e => e.Deathday)
                 .HasColumnType("date")
                 .HasColumnName("deathday");
-            entity.Property(e => e.Gender).HasColumnName("gender");
             entity.Property(e => e.ImdbId)
                 .HasMaxLength(30)
                 .IsUnicode(false)

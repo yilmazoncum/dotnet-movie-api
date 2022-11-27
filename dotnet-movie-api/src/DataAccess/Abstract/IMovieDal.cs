@@ -3,7 +3,8 @@ using Microsoft.EntityFrameworkCore.Query;
 
 namespace dotnet_movie_api.src.DataAccess
 {
-    public interface IGenericDal<T>
+    public interface IGenericDal<T> where T : class
+
     {
         List<T> GetList(T t);
         T Get (int id);

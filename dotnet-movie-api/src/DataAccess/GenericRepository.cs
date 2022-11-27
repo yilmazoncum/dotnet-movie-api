@@ -2,12 +2,13 @@
 
 namespace dotnet_movie_api.src.DataAccess
 {
-    public class GenericRepository<T> : IGenericDal<T>
+    public class GenericRepository<T> : IGenericDal<T> where T : class
+
     {
         public void Add(T t)
         {
             using var ctx = new MovieDbContext();
-            ctx.Remo(t);
+            ctx.Add(t);
             ctx.SaveChanges();
         }
 
@@ -20,17 +21,22 @@ namespace dotnet_movie_api.src.DataAccess
 
         public T Get(int id)
         {
-            throw new NotImplementedException();
+            using var ctx = new MovieDbContext();
+            return ctx.Set<T>().Find(id);
+            
         }
 
         public List<T> GetList(T t)
         {
-            throw new NotImplementedException();
+            using var ctx = new MovieDbContext();
+            return ctx.Set<T>().ToList();
         }
 
         public void Update(T t)
         {
-            throw new NotImplementedException();
+            using var ctx = new MovieDbContext();
+            ctx.Update(t);
+            ctx.SaveChanges();
         }
     }
 }

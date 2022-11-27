@@ -9,8 +9,6 @@ public partial class Person
 
     public DateTime? Deathday { get; set; }
 
-    public bool? Gender { get; set; }
-
     public int Id { get; set; }
 
     public string? ImdbId { get; set; }
