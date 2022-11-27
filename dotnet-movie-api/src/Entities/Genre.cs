@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace dotnet_movie_api.models;
+namespace dotnet_movie_api.src.Models;
 
 public partial class Genre
 {

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using dotnet_movie_api.models;
+using dotnet_movie_api.src.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace dotnet_movie_api.DataAccess;
+namespace dotnet_movie_api.src.DataAccess;
 
 public partial class MovieDbContext : DbContext
 {
