@@ -29,6 +29,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-ExternalApi.GetPerson(70);
+ExternalApi.GetMovie(1359);
 
 app.Run();
