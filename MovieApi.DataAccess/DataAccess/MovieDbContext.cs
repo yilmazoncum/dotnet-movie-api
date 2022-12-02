@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using dotnet_movie_api.src.Models;
+﻿using dotnet_movie_api.src.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace dotnet_movie_api.src.DataAccess;

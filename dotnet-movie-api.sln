@@ -3,7 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-movie-api", "dotnet-movie-api\dotnet-movie-api.csproj", "{74D40B19-5B42-4C91-B0FE-95E7E0C639A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-movie-api", "dotnet-movie-api\dotnet-movie-api.csproj", "{74D40B19-5B42-4C91-B0FE-95E7E0C639A9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{47A3093A-E8BA-4069-9230-581F2D149D5C} = {47A3093A-E8BA-4069-9230-581F2D149D5C}
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MovieApi.Data", "MovieApi.Data\MovieApi.Data.csproj", "{47A3093A-E8BA-4069-9230-581F2D149D5C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MovieApi.DataAccess", "MovieApi.DataAccess\MovieApi.DataAccess.csproj", "{258FFAE6-B388-4073-B667-24529A3D91D1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MovieApi.ExternalApi", "MovieApi.ExternalApi\MovieApi.ExternalApi.csproj", "{C3F16170-C78B-4271-86B5-CC102DD37B68}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +24,18 @@ Global
 		{74D40B19-5B42-4C91-B0FE-95E7E0C639A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{74D40B19-5B42-4C91-B0FE-95E7E0C639A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{74D40B19-5B42-4C91-B0FE-95E7E0C639A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47A3093A-E8BA-4069-9230-581F2D149D5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47A3093A-E8BA-4069-9230-581F2D149D5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47A3093A-E8BA-4069-9230-581F2D149D5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47A3093A-E8BA-4069-9230-581F2D149D5C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{258FFAE6-B388-4073-B667-24529A3D91D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{258FFAE6-B388-4073-B667-24529A3D91D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{258FFAE6-B388-4073-B667-24529A3D91D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{258FFAE6-B388-4073-B667-24529A3D91D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C3F16170-C78B-4271-86B5-CC102DD37B68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C3F16170-C78B-4271-86B5-CC102DD37B68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C3F16170-C78B-4271-86B5-CC102DD37B68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C3F16170-C78B-4271-86B5-CC102DD37B68}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

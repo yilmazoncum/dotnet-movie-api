@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using dotnet_movie_api.src.DataAccess;
+using dotnet_movie_api.src.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using dotnet_movie_api.src.DataAccess;
-using dotnet_movie_api.src.Models;
 
 namespace dotnet_movie_api.src.Controllers
 {

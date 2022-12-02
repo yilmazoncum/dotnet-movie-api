@@ -1,7 +1,6 @@
 using dotnet_movie_api.src.DataAccess;
-using dotnet_movie_api.src.ExternalApi;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+using MovieApi.ExternalApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
