@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using dotnet_movie_api.src.DataAccess;
 using dotnet_movie_api.src.Models;
+using MovieApi.ExternalApi;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace dotnet_movie_api.src.Controllers
 {
@@ -33,13 +35,22 @@ namespace dotnet_movie_api.src.Controllers
         public async Task<ActionResult<Movie>> GetMovie(int id)
         {
             var movie = await _context.Movies.FindAsync(id);
+            if (movie != null)
+            {
+                return movie;
+            }
 
-            if (movie == null)
+            try
+            {
+                Console.WriteLine("Not found in DB -> external api");
+                return ExternalApi.GetMovie(id).Result;
+           
+            }
+            catch(Exception e)
             {
                 return NotFound();
             }
 
-            return movie;
         }
 
         // PUT: api/Movies/5

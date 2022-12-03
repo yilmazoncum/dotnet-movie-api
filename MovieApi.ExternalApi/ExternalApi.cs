@@ -15,7 +15,7 @@ namespace MovieApi.ExternalApi
         static readonly HttpClient client = new HttpClient();
         static MovieDbContext ctx = new MovieDbContext();
 
-        public static async void GetMovie(int id)
+        public static async Task<Movie> GetMovie(int id)
         {
 
             var query = HttpUtility.ParseQueryString(string.Empty);
@@ -23,23 +23,21 @@ namespace MovieApi.ExternalApi
             string queryString = query.ToString();
 
             string currentUrl = baseUrl + "movie/" + id.ToString() + "?" + queryString;
+                 
+            Console.WriteLine("External Api triggered");
+            using HttpResponseMessage response = await client.GetAsync(currentUrl);
+            response.EnsureSuccessStatusCode();
+            string responseBody = await response.Content.ReadAsStringAsync();
 
+            GenericRepository<Movie> genericRepository= new GenericRepository<Movie>();
 
-            try
-            {
-                using HttpResponseMessage response = await client.GetAsync(currentUrl);
-                response.EnsureSuccessStatusCode();
-                string responseBody = await response.Content.ReadAsStringAsync();
+            Movie movie = new Movie();
+            movie = ParseMovieJson(responseBody);
 
-                ctx.Movies.Add(ParseMovieJson(responseBody));
-                ctx.SaveChanges();
+            genericRepository.Add(movie);
 
-            }
-            catch (HttpRequestException e)
-            {
-                Console.WriteLine("\nException Caught!");
-                Console.WriteLine("Message :{0} ", e.Message);
-            }
+            return movie;
+           
         }
 
         public static async void GetPerson(int id)
