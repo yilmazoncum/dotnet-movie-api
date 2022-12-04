@@ -1,9 +1,12 @@
 ﻿using dotnet_movie_api.src.DataAccess;
 using dotnet_movie_api.src.Models;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Configuration;
 using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Web;
 
 namespace MovieApi.ExternalApi
@@ -40,7 +43,7 @@ namespace MovieApi.ExternalApi
            
         }
 
-        public static async void GetPerson(int id)
+        public static async Task<Person> GetPerson(int id)
         {
             var query = HttpUtility.ParseQueryString(string.Empty);
             query["api_key"] = builder.Configuration.GetValue<string>("ExternalApiKey");
@@ -48,20 +51,21 @@ namespace MovieApi.ExternalApi
 
             string currentUrl = baseUrl + "person/" + id.ToString() + "?" + queryString;
 
+            Console.WriteLine("External Api triggered");
+            using HttpResponseMessage response = await client.GetAsync(currentUrl);
+            response.EnsureSuccessStatusCode();
+            string responseBody = await response.Content.ReadAsStringAsync();
 
-            try
-            {
-                using HttpResponseMessage response = await client.GetAsync(currentUrl);
-                response.EnsureSuccessStatusCode();
-                string responseBody = await response.Content.ReadAsStringAsync();
+            GenericRepository<Person> genericRepository = new GenericRepository<Person>();
+            
+            Person person = new Person();
 
-                Console.WriteLine(ParsePersonJson(responseBody));
-            }
-            catch (HttpRequestException e)
-            {
-                Console.WriteLine("\nException Caught!");
-                Console.WriteLine("Message :{0} ", e.Message);
-            }
+            person = ParsePersonJson(responseBody);
+
+            genericRepository.Add(person);
+
+            return person;
+    
         }
 
         private static Movie ParseMovieJson(string response)
@@ -85,20 +89,36 @@ namespace MovieApi.ExternalApi
             return mv;
         }
 
-        private static string ParsePersonJson(string response)
+        private static Person ParsePersonJson(string response)
         {
+
             JObject json = JObject.Parse(response);
+            Person person = new Person();
 
-            json.Remove("adult");
-            json.Remove("also_known_as");
-            json.Remove("biography");
-            json.Remove("gender");
-            json.Remove("homepage");
-            json.Remove("popularity");
-            json.Remove("profile_path");
+            person.Id = int.Parse(json.Property("id").Value.ToString());
 
-            return json.ToString();
+            person.Birthday = DateTime.Parse(json.Property("birthday").Value.ToString());
+
+            String temp = json.Property("deathday").Value.ToString();
+            if (string.IsNullOrEmpty(temp))
+            {
+                person.Deathday = null;
+            }
+            else
+            {
+                person.Deathday = DateTime.Parse(temp);
+            }
+
+            person.ImdbId = json.Property("imdb_id").Value.ToString();
+            person.KnownForDepartment = json.Property("known_for_department").Value.ToString();
+            person.Name= json.Property("name").Value.ToString();
+            person.PlaceOfBirth = json.Property("place_of_birth").Value.ToString();
+
+            Console.WriteLine(person.ToString());
+            return person;
+   
         }
 
-    }
+            
+        }    
 }

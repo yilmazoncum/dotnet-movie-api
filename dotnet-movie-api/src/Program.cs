@@ -1,11 +1,16 @@
 using dotnet_movie_api.src.DataAccess;
+using dotnet_movie_api.src.Models;
 using Microsoft.EntityFrameworkCore;
+using MovieApi.DataAccess.DataAccess;
 using MovieApi.ExternalApi;
+using NuGet.Protocol.Core.Types;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<MovieDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IMovieDal,MovieRepository>();
 
 
 builder.Services.AddControllers();
