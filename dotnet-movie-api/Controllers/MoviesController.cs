@@ -10,7 +10,7 @@ using dotnet_movie_api.src.Models;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using MovieApi.ExternalApi;
 
-namespace dotnet_movie_api.src.Controllers
+namespace dotnet_movie_api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -20,7 +20,7 @@ namespace dotnet_movie_api.src.Controllers
 
         public MoviesController()
         {
-           _repository = new GenericRepository<Movie>();
+            _repository = new GenericRepository<Movie>();
         }
 
         // GET: api/Movies
@@ -36,7 +36,6 @@ namespace dotnet_movie_api.src.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Movie>> GetMovie(int id)
         {
-            // var movie = await _context.Movies.FindAsync(id);
             var movie = _repository.Get(id);
 
             if (movie != null)
@@ -48,9 +47,9 @@ namespace dotnet_movie_api.src.Controllers
             {
                 Console.WriteLine("Movie not found in DB -> external api");
                 return ExternalApi.GetMovie(id).Result;
-           
+
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return NotFound();
             }
@@ -65,7 +64,7 @@ namespace dotnet_movie_api.src.Controllers
             {
                 return BadRequest();
             }
-            
+
 
             try
             {
@@ -91,7 +90,7 @@ namespace dotnet_movie_api.src.Controllers
         [HttpPost]
         public async Task<ActionResult<Movie>> PostMovie(Movie movie)
         {
-                       
+
             try
             {
                 _repository.Add(movie);
@@ -116,12 +115,13 @@ namespace dotnet_movie_api.src.Controllers
         public async Task<IActionResult> DeleteMovie(int id)
         {
             var movie = _repository.Get(id);
-            _repository.Delete(movie);
+            
 
             if (movie == null)
             {
                 return NotFound();
             }
+            _repository.Delete(movie);
 
             return NoContent();
         }
@@ -129,7 +129,7 @@ namespace dotnet_movie_api.src.Controllers
         private bool MovieExists(int id)
         {
 
-            if(_repository.Get(id) == null)
+            if (_repository.Get(id) == null)
             {
                 return false;
             }

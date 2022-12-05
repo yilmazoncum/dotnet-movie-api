@@ -9,31 +9,31 @@ using dotnet_movie_api.src.DataAccess;
 using dotnet_movie_api.src.Models;
 using MovieApi.ExternalApi;
 
-namespace dotnet_movie_api.src.Controllers
+namespace dotnet_movie_api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class PersonController : ControllerBase
     {
-        private readonly MovieDbContext _context;
+        private readonly GenericRepository<Person> _repository;
 
         public PersonController(MovieDbContext context)
         {
-            _context = context;
+            _repository = new GenericRepository<Person>();
         }
 
         // GET: api/Person
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Person>>> GetPersons()
         {
-            return await _context.Persons.ToListAsync();
+            return _repository.GetList();
         }
 
         //// GET: api/Person/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Person>> GetPerson(int id)
         {
-            var person = await _context.Persons.FindAsync(id);
+            var person = _repository.Get(id);
 
             if (person != null)
             {
@@ -61,11 +61,9 @@ namespace dotnet_movie_api.src.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(person).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
+                _repository.Update(person);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -87,10 +85,10 @@ namespace dotnet_movie_api.src.Controllers
         [HttpPost]
         public async Task<ActionResult<Person>> PostPerson(Person person)
         {
-            _context.Persons.Add(person);
+
             try
             {
-                await _context.SaveChangesAsync();
+                _repository.Add(person);
             }
             catch (DbUpdateException)
             {
@@ -109,23 +107,25 @@ namespace dotnet_movie_api.src.Controllers
 
         // DELETE: api/Person/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePerson(int id)
+        public async Task<IActionResult> DeletePerson(Person person)
         {
-            var person = await _context.Persons.FindAsync(id);
             if (person == null)
             {
                 return NotFound();
             }
 
-            _context.Persons.Remove(person);
-            await _context.SaveChangesAsync();
+            _repository.Delete(person);
 
             return NoContent();
         }
 
         private bool PersonExists(int id)
         {
-            return _context.Persons.Any(e => e.Id == id);
+            if (_repository.Get(id) == null)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

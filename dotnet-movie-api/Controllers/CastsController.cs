@@ -2,39 +2,50 @@
 using dotnet_movie_api.src.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MovieApi.ExternalApi;
+using System;
 
-namespace dotnet_movie_api.src.Controllers
+namespace dotnet_movie_api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class CastsController : ControllerBase
     {
-        private readonly MovieDbContext _context;
+        private readonly GenericRepository<Cast> _repository;
 
         public CastsController(MovieDbContext context)
         {
-            _context = context;
+            _repository = new GenericRepository<Cast>();
         }
 
         // GET: api/Casts
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Cast>>> GetCasts()
         {
-            return await _context.Casts.ToListAsync();
+            return _repository.GetList();
         }
 
         // GET: api/Casts/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Cast>> GetCast(int id)
         {
-            var cast = await _context.Casts.FindAsync(id);
+            var person = _repository.Get(id);
 
-            if (cast == null)
+            if (person != null)
+            {
+                return person;
+            }
+
+            try
+            {
+                Console.WriteLine("Cast not found in DB -> external api");
+                return ExternalApi.GetCast(id).Result;
+
+            }
+            catch (Exception e)
             {
                 return NotFound();
             }
-
-            return cast;
         }
 
         // PUT: api/Casts/5
@@ -47,11 +58,11 @@ namespace dotnet_movie_api.src.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(cast).State = EntityState.Modified;
+            
 
             try
             {
-                await _context.SaveChangesAsync();
+                _repository.Update(cast);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -73,8 +84,7 @@ namespace dotnet_movie_api.src.Controllers
         [HttpPost]
         public async Task<ActionResult<Cast>> PostCast(Cast cast)
         {
-            _context.Casts.Add(cast);
-            await _context.SaveChangesAsync();
+            _repository.Add(cast);
 
             return CreatedAtAction("GetCast", new { id = cast.MovieId }, cast);
         }
@@ -83,21 +93,25 @@ namespace dotnet_movie_api.src.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCast(int id)
         {
-            var cast = await _context.Casts.FindAsync(id);
+            var cast = _repository.Get(id);
+            
             if (cast == null)
             {
                 return NotFound();
             }
 
-            _context.Casts.Remove(cast);
-            await _context.SaveChangesAsync();
+            _repository.Delete(cast);
 
             return NoContent();
         }
 
         private bool CastExists(int id)
         {
-            return _context.Casts.Any(e => e.MovieId == id);
+            if (_repository.Get(id) == null)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

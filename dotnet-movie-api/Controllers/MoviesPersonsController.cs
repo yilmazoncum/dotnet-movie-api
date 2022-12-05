@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using dotnet_movie_api.src.DataAccess;
 using dotnet_movie_api.src.Models;
 
-namespace dotnet_movie_api.src.Controllers
+namespace dotnet_movie_api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

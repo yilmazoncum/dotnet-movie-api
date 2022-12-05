@@ -68,6 +68,27 @@ namespace MovieApi.ExternalApi
     
         }
 
+        public static async Task<Cast> GetCast(int id)
+        {
+            var query = HttpUtility.ParseQueryString(string.Empty);
+            query["api_key"] = builder.Configuration.GetValue<string>("ExternalApiKey");
+            string queryString = query.ToString();
+
+            string currentUrl = baseUrl + "movie/" + id.ToString() + "/credits" + "?" + queryString;
+
+            Console.WriteLine("External Api triggered");
+            using HttpResponseMessage response = await client.GetAsync(currentUrl);
+            response.EnsureSuccessStatusCode();
+            string responseBody = await response.Content.ReadAsStringAsync();
+
+            GenericRepository<Cast> genericRepository = new GenericRepository<Cast>();
+            Cast cast = new Cast();
+
+            cast = ParseCastJson(responseBody);       
+
+            return cast;
+        }
+
         private static Movie ParseMovieJson(string response)
         {
             JObject json = JObject.Parse(response);
@@ -119,6 +140,32 @@ namespace MovieApi.ExternalApi
    
         }
 
-            
-        }    
+
+        private static Cast ParseCastJson(string response)
+        {
+
+            JObject json = JObject.Parse(response);
+            GenericRepository<Cast> genericRepository = new GenericRepository<Cast>();
+            Cast cast = new Cast();
+
+            cast.MovieId = int.Parse(json.Property("id").Value.ToString());
+            for (int i = 0; i < 10; i++)
+            {
+                Console.WriteLine("for");
+                JToken tempCast = json["cast"][i];
+                cast.PersonId = int.Parse((string)tempCast["id"]);
+                cast.Name =(string)tempCast["name"];
+                cast.KnownForDepartment = (string)tempCast["known_for_department"];
+                cast.Character = (string)tempCast["character"];
+
+                genericRepository.Add(cast);
+            }
+            return cast;
+        }
+
+
+
+
+
+    }    
 }
