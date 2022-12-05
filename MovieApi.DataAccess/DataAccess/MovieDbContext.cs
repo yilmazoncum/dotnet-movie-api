@@ -1,5 +1,6 @@
 ﻿using dotnet_movie_api.src.Models;
 using Microsoft.EntityFrameworkCore;
+using MovieApi.Data.Entities;
 
 namespace dotnet_movie_api.src.DataAccess;
 
@@ -21,7 +22,7 @@ public partial class MovieDbContext : DbContext
 
     public virtual DbSet<Movie> Movies { get; set; }
 
-    public virtual DbSet<MoviesPerson> MoviesPeople { get; set; }
+    public virtual DbSet<Filmography> Filmographies { get; set; }
 
     public virtual DbSet<Person> Persons { get; set; }
 
@@ -95,30 +96,22 @@ public partial class MovieDbContext : DbContext
             entity.Property(e => e.VoteCount).HasColumnName("vote_count");
         });
 
-        modelBuilder.Entity<MoviesPerson>(entity =>
+        modelBuilder.Entity<Filmography>(entity =>
         {
-            entity.HasKey(e => e.MovieId).HasName("PK__Movies_P__42EB372EEF6EAB1E");
+            entity.HasKey(e => e.MovieId).HasName("PK__Filmogra__42EB372E34A92F1F");
 
-            entity.ToTable("Movies_Person");
+            entity.ToTable("Filmographies");
 
             entity.Property(e => e.MovieId)
                 .ValueGeneratedNever()
                 .HasColumnName("movieID");
+            entity.Property(e => e.PersonId)
+                .ValueGeneratedNever()
+                .HasColumnName("PersonID");
             entity.Property(e => e.Character)
                 .HasMaxLength(30)
                 .IsUnicode(false)
                 .HasColumnName("character");
-            entity.Property(e => e.OriginalTitle)
-                .HasMaxLength(30)
-                .IsUnicode(false)
-                .HasColumnName("original_title");
-            entity.Property(e => e.Overview)
-                .HasMaxLength(200)
-                .IsUnicode(false)
-                .HasColumnName("overview");
-            entity.Property(e => e.ReleaseDate)
-                .HasColumnType("date")
-                .HasColumnName("release_date");
             entity.Property(e => e.Title)
                 .HasMaxLength(30)
                 .IsUnicode(false)

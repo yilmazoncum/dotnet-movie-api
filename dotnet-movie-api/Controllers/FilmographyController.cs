@@ -5,46 +5,46 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MovieApi.Data.Entities;
 using dotnet_movie_api.src.DataAccess;
 using dotnet_movie_api.src.Models;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using MovieApi.ExternalApi;
 
 namespace dotnet_movie_api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class MoviesController : ControllerBase
+    public class FilmographyController : ControllerBase
     {
-        private readonly GenericRepository<Movie> _repository;
+        private readonly GenericRepository<Filmography> _repository;
 
-        public MoviesController()
+        public FilmographyController(MovieDbContext context)
         {
-            _repository = new GenericRepository<Movie>();
+            _repository = new GenericRepository<Filmography>();
         }
 
-        // GET: api/Movies
+        // GET: api/Filmography
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Movie>>> GetMovies()
+        public async Task<ActionResult<IEnumerable<Filmography>>> GetFilmographies()
         {
             return _repository.GetList();
         }
 
-        // GET: api/Movies/5
+        // GET: api/Filmography/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Movie>> GetMovie(int id)
+        public async Task<ActionResult<Filmography>> GetFilmography(int id)
         {
-            var movie = _repository.Get(id);
+            var filmography = _repository.Get(id);
 
-            if (movie != null)
+            if (filmography != null)
             {
-                return movie;
+                return filmography;
             }
 
             try
             {
-                Console.WriteLine("Movie not found in DB -> external api");
-                return ExternalApi.GetMovie(id).Result;
+                Console.WriteLine("Filmography not found in DB -> external api");
+                return ExternalApi.GetFilmography(id).Result;
 
             }
             catch (Exception e)
@@ -53,24 +53,23 @@ namespace dotnet_movie_api.Controllers
             }
         }
 
-        // PUT: api/Movies/5
+        // PUT: api/Filmography/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutMovie(int id, Movie movie)
+        public async Task<IActionResult> PutFilmography(int id, Filmography filmography)
         {
-            if (id != movie.Id)
+            if (id != filmography.MovieId)
             {
                 return BadRequest();
             }
 
-
             try
             {
-                _repository.Update(movie);
+                _repository.Update(filmography);
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!MovieExists(id))
+                if (!FilmographyExists(id))
                 {
                     return NotFound();
                 }
@@ -83,19 +82,18 @@ namespace dotnet_movie_api.Controllers
             return NoContent();
         }
 
-        // POST: api/Movies
+        // POST: api/Filmography
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Movie>> PostMovie(Movie movie)
+        public async Task<ActionResult<Filmography>> PostFilmography(Filmography filmography)
         {
-
             try
             {
-                _repository.Add(movie);
+                _repository.Add(filmography);
             }
             catch (DbUpdateException)
             {
-                if (MovieExists(movie.Id))
+                if (FilmographyExists(filmography.MovieId))
                 {
                     return Conflict();
                 }
@@ -105,28 +103,26 @@ namespace dotnet_movie_api.Controllers
                 }
             }
 
-            return CreatedAtAction("GetMovie", new { id = movie.Id }, movie);
+            return CreatedAtAction("GetFilmography", new { id = filmography.MovieId }, filmography);
         }
 
-        // DELETE: api/Movies/5
+        // DELETE: api/Filmography/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMovie(int id)
+        public async Task<IActionResult> DeleteFilmography(int id)
         {
-            var movie = _repository.Get(id);
-            
-
-            if (movie == null)
+            var filmography = _repository.Get(id);
+            if (filmography == null)
             {
                 return NotFound();
             }
-            _repository.Delete(movie);
+
+            _repository.Delete(filmography);
 
             return NoContent();
         }
 
-        private bool MovieExists(int id)
+        private bool FilmographyExists(int id)
         {
-
             if (_repository.Get(id) == null)
             {
                 return false;

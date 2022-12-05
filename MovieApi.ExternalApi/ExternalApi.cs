@@ -1,6 +1,7 @@
 ﻿using dotnet_movie_api.src.DataAccess;
 using dotnet_movie_api.src.Models;
 using Microsoft.AspNetCore.Mvc;
+using MovieApi.Data.Entities;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Configuration;
@@ -89,6 +90,27 @@ namespace MovieApi.ExternalApi
             return cast;
         }
 
+        public static async Task<Filmography> GetFilmography(int id)
+        {
+            var query = HttpUtility.ParseQueryString(string.Empty);
+            query["api_key"] = builder.Configuration.GetValue<string>("ExternalApiKey");
+            string queryString = query.ToString();
+
+            string currentUrl = baseUrl + "person/" + id.ToString() + "/movie_credits" + "?" + queryString;
+            Console.WriteLine(currentUrl);
+            Console.WriteLine("External Api triggered");
+            using HttpResponseMessage response = await client.GetAsync(currentUrl);
+            response.EnsureSuccessStatusCode();
+            string responseBody = await response.Content.ReadAsStringAsync();
+
+            GenericRepository<Filmography> genericRepository = new GenericRepository<Filmography>();
+            Filmography filmo = new Filmography();
+
+            filmo = ParseFilmographyJson(responseBody, id);
+
+            return filmo;
+        }
+
         private static Movie ParseMovieJson(string response)
         {
             JObject json = JObject.Parse(response);
@@ -151,7 +173,6 @@ namespace MovieApi.ExternalApi
             cast.MovieId = int.Parse(json.Property("id").Value.ToString());
             for (int i = 0; i < 10; i++)
             {
-                Console.WriteLine("for");
                 JToken tempCast = json["cast"][i];
                 cast.PersonId = int.Parse((string)tempCast["id"]);
                 cast.Name =(string)tempCast["name"];
@@ -163,7 +184,27 @@ namespace MovieApi.ExternalApi
             return cast;
         }
 
+        private static Filmography ParseFilmographyJson(string response, int id)
+        {
 
+            JObject json = JObject.Parse(response);
+            Filmography filmo = new Filmography();         
+            GenericRepository<Filmography> genericRepository = new GenericRepository<Filmography>();
+            
+
+            filmo.PersonId = id;
+            for (int i = 0; i < 10; i++)
+            {
+                JToken tempCast = json["cast"][i];
+                filmo.MovieId = int.Parse((string)tempCast["id"]);
+                filmo.Title = (string)tempCast["title"];
+                filmo.Character = (string)tempCast["character"];
+
+                genericRepository.Add(filmo);
+            }
+            return filmo;
+
+        }
 
 
 

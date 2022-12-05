@@ -8,7 +8,14 @@ namespace dotnet_movie_api.src.DataAccess
         public  void Add(T t)
         {
             using var ctx = new MovieDbContext();
-            ctx.Add(t);
+            try
+            {
+                ctx.Add(t);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
             ctx.SaveChanges();
         }
 
