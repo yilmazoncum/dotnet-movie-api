@@ -18,25 +18,17 @@ namespace MovieApi.ExternalApi
         static string baseUrl = "https://api.themoviedb.org/3/";
         static readonly HttpClient client = new HttpClient();
         static MovieDbContext ctx = new MovieDbContext();
+        static string apiKey = builder.Configuration.GetValue<string>("ExternalApiKey").ToString();
 
         public static async Task<Movie> GetMovie(int id)
         {
-
-            var query = HttpUtility.ParseQueryString(string.Empty);
-            query["api_key"] = builder.Configuration.GetValue<string>("ExternalApiKey");
-            string queryString = query.ToString();
-
-            string currentUrl = baseUrl + "movie/" + id.ToString() + "?" + queryString;
-                 
-            Console.WriteLine("External Api triggered");
-            using HttpResponseMessage response = await client.GetAsync(currentUrl);
-            response.EnsureSuccessStatusCode();
-            string responseBody = await response.Content.ReadAsStringAsync();
-
+       
+            string currentUrl = baseUrl + "movie/" + id.ToString() + "?" + apiKey;
+                          
             GenericRepository<Movie> genericRepository= new GenericRepository<Movie>();
-
             Movie movie = new Movie();
-            movie = ParseMovieJson(responseBody);
+
+            movie = ParseMovieJson(makeRequest(currentUrl).Result);
 
             genericRepository.Add(movie);
 
@@ -46,22 +38,13 @@ namespace MovieApi.ExternalApi
 
         public static async Task<Person> GetPerson(int id)
         {
-            var query = HttpUtility.ParseQueryString(string.Empty);
-            query["api_key"] = builder.Configuration.GetValue<string>("ExternalApiKey");
-            string queryString = query.ToString();
-
-            string currentUrl = baseUrl + "person/" + id.ToString() + "?" + queryString;
+            string currentUrl = baseUrl + "person/" + id.ToString() + "?" + apiKey;
 
             Console.WriteLine("External Api triggered");
-            using HttpResponseMessage response = await client.GetAsync(currentUrl);
-            response.EnsureSuccessStatusCode();
-            string responseBody = await response.Content.ReadAsStringAsync();
-
-            GenericRepository<Person> genericRepository = new GenericRepository<Person>();
-            
+           
+            GenericRepository<Person> genericRepository = new GenericRepository<Person>();         
             Person person = new Person();
-
-            person = ParsePersonJson(responseBody);
+            person = ParsePersonJson(makeRequest(currentUrl).Result);
 
             genericRepository.Add(person);
 
@@ -71,42 +54,26 @@ namespace MovieApi.ExternalApi
 
         public static async Task<Cast> GetCast(int id)
         {
-            var query = HttpUtility.ParseQueryString(string.Empty);
-            query["api_key"] = builder.Configuration.GetValue<string>("ExternalApiKey");
-            string queryString = query.ToString();
-
-            string currentUrl = baseUrl + "movie/" + id.ToString() + "/credits" + "?" + queryString;
+            string currentUrl = baseUrl + "movie/" + id.ToString() + "/credits" + "?" + apiKey;
 
             Console.WriteLine("External Api triggered");
-            using HttpResponseMessage response = await client.GetAsync(currentUrl);
-            response.EnsureSuccessStatusCode();
-            string responseBody = await response.Content.ReadAsStringAsync();
 
             GenericRepository<Cast> genericRepository = new GenericRepository<Cast>();
             Cast cast = new Cast();
-
-            cast = ParseCastJson(responseBody);       
+            cast = ParseCastJson(makeRequest(currentUrl).Result);
 
             return cast;
         }
 
         public static async Task<Filmography> GetFilmography(int id)
         {
-            var query = HttpUtility.ParseQueryString(string.Empty);
-            query["api_key"] = builder.Configuration.GetValue<string>("ExternalApiKey");
-            string queryString = query.ToString();
-
-            string currentUrl = baseUrl + "person/" + id.ToString() + "/movie_credits" + "?" + queryString;
-            Console.WriteLine(currentUrl);
+            string currentUrl = baseUrl + "person/" + id.ToString() + "/movie_credits" + "?" + apiKey;
+            
             Console.WriteLine("External Api triggered");
-            using HttpResponseMessage response = await client.GetAsync(currentUrl);
-            response.EnsureSuccessStatusCode();
-            string responseBody = await response.Content.ReadAsStringAsync();
-
+            
             GenericRepository<Filmography> genericRepository = new GenericRepository<Filmography>();
             Filmography filmo = new Filmography();
-
-            filmo = ParseFilmographyJson(responseBody, id);
+            filmo = ParseFilmographyJson(makeRequest(currentUrl).Result,id);
 
             return filmo;
         }
@@ -162,7 +129,6 @@ namespace MovieApi.ExternalApi
    
         }
 
-
         private static Cast ParseCastJson(string response)
         {
 
@@ -206,7 +172,13 @@ namespace MovieApi.ExternalApi
 
         }
 
+        private static async Task<String> makeRequest(string url)
+        {
+            using HttpResponseMessage response = await client.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+            string responseBody = await response.Content.ReadAsStringAsync();
 
-
+            return responseBody;
+        }
     }    
 }
