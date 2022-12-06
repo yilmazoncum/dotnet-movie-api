@@ -12,24 +12,8 @@ using MovieApi.ExternalApi;
 
 namespace dotnet_movie_api.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class FilmographyController : ControllerBase
+    public class FilmographyController : GenericController<Filmography>
     {
-        private readonly GenericRepository<Filmography> _repository;
-
-        public FilmographyController(MovieDbContext context)
-        {
-            _repository = new GenericRepository<Filmography>();
-        }
-
-        // GET: api/Filmography
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Filmography>>> GetFilmographies()
-        {
-            return _repository.GetList();
-        }
-
         // GET: api/Filmography/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Filmography>> GetFilmography(int id)
@@ -104,21 +88,6 @@ namespace dotnet_movie_api.Controllers
             }
 
             return CreatedAtAction("GetFilmography", new { id = filmography.MovieId }, filmography);
-        }
-
-        // DELETE: api/Filmography/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteFilmography(int id)
-        {
-            var filmography = _repository.Get(id);
-            if (filmography == null)
-            {
-                return NotFound();
-            }
-
-            _repository.Delete(filmography);
-
-            return NoContent();
         }
 
         private bool FilmographyExists(int id)

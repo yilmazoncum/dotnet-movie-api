@@ -12,23 +12,8 @@ using MovieApi.ExternalApi;
 
 namespace dotnet_movie_api.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class MoviesController : ControllerBase
+    public class MoviesController : GenericController<Movie>
     {
-        private readonly GenericRepository<Movie> _repository;
-
-        public MoviesController()
-        {
-            _repository = new GenericRepository<Movie>();
-        }
-
-        // GET: api/Movies
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Movie>>> GetMovies()
-        {
-            return _repository.GetList();
-        }
 
         // GET: api/Movies/5
         [HttpGet("{id}")]
@@ -106,22 +91,6 @@ namespace dotnet_movie_api.Controllers
             }
 
             return CreatedAtAction("GetMovie", new { id = movie.Id }, movie);
-        }
-
-        // DELETE: api/Movies/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMovie(int id)
-        {
-            var movie = _repository.Get(id);
-            
-
-            if (movie == null)
-            {
-                return NotFound();
-            }
-            _repository.Delete(movie);
-
-            return NoContent();
         }
 
         private bool MovieExists(int id)

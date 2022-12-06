@@ -8,27 +8,12 @@ using Microsoft.EntityFrameworkCore;
 using dotnet_movie_api.src.DataAccess;
 using dotnet_movie_api.src.Models;
 using MovieApi.ExternalApi;
+using MovieApi.Data.Entities;
 
 namespace dotnet_movie_api.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class PersonController : ControllerBase
-    {
-        private readonly GenericRepository<Person> _repository;
-
-        public PersonController(MovieDbContext context)
-        {
-            _repository = new GenericRepository<Person>();
-        }
-
-        // GET: api/Person
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Person>>> GetPersons()
-        {
-            return _repository.GetList();
-        }
-
+    public class PersonController : GenericController<Person>
+    {      
         //// GET: api/Person/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Person>> GetPerson(int id)
@@ -104,21 +89,6 @@ namespace dotnet_movie_api.Controllers
 
             return CreatedAtAction("GetPerson", new { id = person.Id }, person);
         }
-
-        // DELETE: api/Person/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePerson(Person person)
-        {
-            if (person == null)
-            {
-                return NotFound();
-            }
-
-            _repository.Delete(person);
-
-            return NoContent();
-        }
-
         private bool PersonExists(int id)
         {
             if (_repository.Get(id) == null)

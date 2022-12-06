@@ -7,24 +7,8 @@ using System;
 
 namespace dotnet_movie_api.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class CastsController : ControllerBase
+    public class CastsController : GenericController<Cast>
     {
-        private readonly GenericRepository<Cast> _repository;
-
-        public CastsController(MovieDbContext context)
-        {
-            _repository = new GenericRepository<Cast>();
-        }
-
-        // GET: api/Casts
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Cast>>> GetCasts()
-        {
-            return _repository.GetList();
-        }
-
         // GET: api/Casts/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Cast>> GetCast(int id)
@@ -87,22 +71,6 @@ namespace dotnet_movie_api.Controllers
             _repository.Add(cast);
 
             return CreatedAtAction("GetCast", new { id = cast.MovieId }, cast);
-        }
-
-        // DELETE: api/Casts/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCast(int id)
-        {
-            var cast = _repository.Get(id);
-            
-            if (cast == null)
-            {
-                return NotFound();
-            }
-
-            _repository.Delete(cast);
-
-            return NoContent();
         }
 
         private bool CastExists(int id)

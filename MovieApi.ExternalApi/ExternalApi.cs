@@ -16,26 +16,18 @@ namespace MovieApi.ExternalApi
     {
 
         public static ExternalApi ExternalApiSingleton = new ExternalApi();
-
-        private ExternalApi() { }
-
-        public static ExternalApi GetInstance()
-        {
-            static WebApplicationBuilder builder = WebApplication.CreateBuilder();
-            static string baseUrl = "https://api.themoviedb.org/3/";
-            static readonly HttpClient client = new HttpClient();
-            static MovieDbContext ctx = new MovieDbContext();
-            static string apiKey = builder.Configuration.GetValue<string>("ExternalApiKey").ToString();
-
-
-            return ExternalApiSingleton;
-        }
-
         static WebApplicationBuilder builder = WebApplication.CreateBuilder();
         static string baseUrl = "https://api.themoviedb.org/3/";
         static readonly HttpClient client = new HttpClient();
         static MovieDbContext ctx = new MovieDbContext();
         static string apiKey = builder.Configuration.GetValue<string>("ExternalApiKey").ToString();
+
+        private ExternalApi() { }
+
+        public static ExternalApi GetInstance()
+        {
+            return ExternalApiSingleton;
+        }
 
         public static async Task<Movie> GetMovie(int id)
         {
