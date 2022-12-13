@@ -6,20 +6,42 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using dotnet_movie_api.src.DataAccess;
-using dotnet_movie_api.src.Models;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using MovieApi.ExternalApi;
+using MovieApi.Data.Entities;
+using MovieApi.DataAccess.DataAccess;
 
 namespace dotnet_movie_api.Controllers
 {
-    public class MoviesController : GenericController<Movie>
+    [Route("/[controller]")]
+    public class MoviesController : Controller
     {
-
-        // GET: api/Movies/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Movie>> GetMovie(int id)
+        IMovieRepository _repository;
+        ExternalApi _externalApi;
+        
+        public MoviesController(IMovieRepository movieRepository, ExternalApi externalApi)
         {
-            var movie = _repository.Get(id);
+            _repository = movieRepository;
+            _externalApi = externalApi;
+        }
+        
+        [HttpGet("db/{guid}")]
+        public async Task<ActionResult<Movie>> GetMoviewithGuid(Guid guid)
+        {
+            var movie = _repository.GetwithGuid(guid);
+
+            if (movie != null)
+            {
+                return movie;
+            }
+            return NotFound();
+        }
+
+        
+        [HttpGet("api/{apiId}")]
+        public async Task<ActionResult<Movie>> GetMoviewithApiId(int apiId)
+        {
+            var movie = _repository.GetwithApiId(apiId);
 
             if (movie != null)
             {
@@ -29,54 +51,38 @@ namespace dotnet_movie_api.Controllers
             try
             {
                 Console.WriteLine("Movie not found in DB -> external api");
-                return ExternalApi.GetMovie(id).Result;
+                return _externalApi.GetMovie(apiId).Result;
 
             }
             catch (Exception e)
             {
                 return NotFound();
             }
-        }
-
-        // PUT: api/Movies/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutMovie(int id, Movie movie)
+        }      
+        
+        [HttpPut("")]
+        public async Task<IActionResult> PutMovie([Bind] Movie movie)
         {
-            if (id != movie.Id)
+            if (!MovieExists(movie.Id))
             {
-                return BadRequest();
+                return NotFound();
             }
-
-
-            try
+            else
             {
                 _repository.Update(movie);
+                return Ok();
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!MovieExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Movies
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        }    
+      
         [HttpPost]
-        public async Task<ActionResult<Movie>> PostMovie(Movie movie)
+        public async Task<ActionResult<Movie>> PostMovie([Bind] Movie movie)
         {
 
             try
             {
+                movie.Id = Guid.NewGuid();
                 _repository.Add(movie);
+                return Ok(movie);
             }
             catch (DbUpdateException)
             {
@@ -90,13 +96,33 @@ namespace dotnet_movie_api.Controllers
                 }
             }
 
-            return CreatedAtAction("GetMovie", new { id = movie.Id }, movie);
         }
 
-        private bool MovieExists(int id)
+        [HttpGet("list")]
+        public ActionResult<IEnumerable<Movie>> GetList()
+        {
+            //logger.LogInformation("Get list : " + typeof(T));
+            return _repository.GetList();
+        }
+
+        [HttpDelete("")]
+        public ActionResult Delete(Guid id)
+        {
+            Movie movie = _repository.GetwithGuid(id);
+            if (movie == null)
+            {
+                return NotFound();
+            }
+
+            _repository.Delete(movie);
+
+            return Ok();
+        }
+
+        private bool MovieExists(Guid id)
         {
 
-            if (_repository.Get(id) == null)
+            if (_repository.GetwithGuid(id) == null)
             {
                 return false;
             }

@@ -1,11 +1,12 @@
 ﻿using dotnet_movie_api.src.DataAccess;
-using dotnet_movie_api.src.Models;
 using Microsoft.AspNetCore.Mvc;
 using MovieApi.Data.Entities;
+using MovieApi.DataAccess.DataAccess;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Configuration;
 using System.IO;
+using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Web;
@@ -14,85 +15,114 @@ namespace MovieApi.ExternalApi
 {
     public class ExternalApi
     {
+        //static WebApplicationBuilder builder = WebApplication.CreateBuilder();
+        static string apiKey;// = builder.Configuration.GetValue<string>("ExternalApiKey").ToString();
 
-        public static ExternalApi ExternalApiSingleton = new ExternalApi();
-        static WebApplicationBuilder builder = WebApplication.CreateBuilder();
         static string baseUrl = "https://api.themoviedb.org/3/";
         static readonly HttpClient client = new HttpClient();
-        static MovieDbContext ctx = new MovieDbContext();
-        static string apiKey = builder.Configuration.GetValue<string>("ExternalApiKey").ToString();
+        
 
-        private ExternalApi() { }
+        IMovieRepository _movieRepository;
+        IPersonRepository _personRepository;
+        ICastRepository _castRepository;
+        IFilmographyRepository _filmographyRepository;
 
-        public static ExternalApi GetInstance()
+        public ExternalApi(IMovieRepository movieRepository, IPersonRepository personRepository, ICastRepository castRepository, IFilmographyRepository filmographyRepository, IConfiguration conf)
         {
-            return ExternalApiSingleton;
+            _movieRepository = movieRepository;
+            _personRepository = personRepository;
+            _castRepository = castRepository;
+            _filmographyRepository = filmographyRepository;
+            apiKey = conf.GetValue<string>("ExternalApiKey").ToString();
         }
 
-        public static async Task<Movie> GetMovie(int id)
+        public async Task<Movie> GetMovie(int id)
         {
-       
-            string currentUrl = baseUrl + "movie/" + id.ToString() + "?" + apiKey;
+            Console.WriteLine("GetMovie");
+            string currentUrl = baseUrl + "movie/" + id.ToString() + "?api_key=" + apiKey;
                           
-            GenericRepository<Movie> genericRepository= new GenericRepository<Movie>();
             Movie movie = new Movie();
 
             movie = ParseMovieJson(makeRequest(currentUrl).Result);
 
-            genericRepository.Add(movie);
+            movie.Id = Guid.NewGuid();
+            _movieRepository.Add(movie);
 
             return movie;
            
         }
 
-        public static async Task<Person> GetPerson(int id)
+        public async Task<Person> GetPerson(int id)
         {
-            string currentUrl = baseUrl + "person/" + id.ToString() + "?" + apiKey;
+            string currentUrl = baseUrl + "person/" + id.ToString() + "?api_key=" + apiKey;
 
             Console.WriteLine("External Api triggered");
-           
-            GenericRepository<Person> genericRepository = new GenericRepository<Person>();         
+        
             Person person = new Person();
             person = ParsePersonJson(makeRequest(currentUrl).Result);
 
-            genericRepository.Add(person);
+            person.Id = Guid.NewGuid();
+            _personRepository.Add(person);
 
             return person;
     
         }
 
-        public static async Task<Cast> GetCast(int id)
+        public async Task<Cast> GetCast(Guid id)
         {
-            string currentUrl = baseUrl + "movie/" + id.ToString() + "/credits" + "?" + apiKey;
+            string currentUrl = baseUrl + "movie/" + id.ToString() + "/credits" + "?api_key=" + apiKey;
 
             Console.WriteLine("External Api triggered");
 
-            GenericRepository<Cast> genericRepository = new GenericRepository<Cast>();
             Cast cast = new Cast();
             cast = ParseCastJson(makeRequest(currentUrl).Result);
 
             return cast;
         }
 
-        public static async Task<Filmography> GetFilmography(int id)
+        public async Task<Filmography> GetFilmography(Guid id)
         {
-            string currentUrl = baseUrl + "person/" + id.ToString() + "/movie_credits" + "?" + apiKey;
+            string currentUrl = baseUrl + "person/" + id.ToString() + "/movie_credits" + "?api_key=" + apiKey;
             
             Console.WriteLine("External Api triggered");
             
-            GenericRepository<Filmography> genericRepository = new GenericRepository<Filmography>();
             Filmography filmo = new Filmography();
             filmo = ParseFilmographyJson(makeRequest(currentUrl).Result,id);
 
             return filmo;
         }
 
-        private static Movie ParseMovieJson(string response)
+        public async Task<int> SearchMovie(string str)
         {
+            string currentUrl = baseUrl + "search/movie/?api_key=" +apiKey + "&query=" + str;
+            Console.WriteLine($"currentUrl: {currentUrl}");
+
+            Movie movie = new Movie();
+
+            int id = ParseIdfromSearch(makeRequest(currentUrl).Result);
+
+            return id;
+        }
+
+        public async Task<int> SearchPerson(string str)
+        {
+            string currentUrl = baseUrl + "search/person/?api_key=" + apiKey + "&query=" + str;
+            Console.WriteLine($"currentUrl: {currentUrl}");
+
+            Person person = new Person();
+
+            int id = ParseIdfromSearch(makeRequest(currentUrl).Result);
+
+            return id;
+        }
+        private Movie ParseMovieJson(string response)
+        {
+           // var f = new System.Text.Json.Serialization.JsonConverter<Movie>();
+
             JObject json = JObject.Parse(response);
             Movie mv = new Movie();
 
-            mv.Id = int.Parse(json.Property("id").Value.ToString());
+            mv.ApiId = int.Parse(json.Property("id").Value.ToString());
             mv.Budget = json.Property("budget").Value.ToString();
             mv.ImdbId = json.Property("imdb_id").Value.ToString();
             mv.OriginalTitle = json.Property("original_title").Value.ToString();
@@ -108,13 +138,13 @@ namespace MovieApi.ExternalApi
             return mv;
         }
 
-        private static Person ParsePersonJson(string response)
+        private Person ParsePersonJson(string response)
         {
 
             JObject json = JObject.Parse(response);
             Person person = new Person();
 
-            person.Id = int.Parse(json.Property("id").Value.ToString());
+            person.ApiId = int.Parse(json.Property("id").Value.ToString());
 
             person.Birthday = DateTime.Parse(json.Property("birthday").Value.ToString());
 
@@ -138,56 +168,75 @@ namespace MovieApi.ExternalApi
    
         }
 
-        private static Cast ParseCastJson(string response)
+        private Cast ParseCastJson(string response)
         {
 
             JObject json = JObject.Parse(response);
-            GenericRepository<Cast> genericRepository = new GenericRepository<Cast>();
             Cast cast = new Cast();
 
-            cast.MovieId = int.Parse(json.Property("id").Value.ToString());
+            cast.MovieId = Guid.Parse(json.Property("id").Value.ToString());
             for (int i = 0; i < 10; i++)
             {
                 JToken tempCast = json["cast"][i];
-                cast.PersonId = int.Parse((string)tempCast["id"]);
+                cast.PersonId = Guid.Parse((string)tempCast["id"]);
                 cast.Name =(string)tempCast["name"];
                 cast.KnownForDepartment = (string)tempCast["known_for_department"];
                 cast.Character = (string)tempCast["character"];
 
-                genericRepository.Add(cast);
+                _castRepository.Add(cast);
             }
             return cast;
         }
 
-        private static Filmography ParseFilmographyJson(string response, int id)
+        private Filmography ParseFilmographyJson(string response, Guid id)
         {
 
             JObject json = JObject.Parse(response);
-            Filmography filmo = new Filmography();         
-            GenericRepository<Filmography> genericRepository = new GenericRepository<Filmography>();
+            Filmography filmo = new Filmography();
             
 
             filmo.PersonId = id;
             for (int i = 0; i < 10; i++)
             {
                 JToken tempCast = json["cast"][i];
-                filmo.MovieId = int.Parse((string)tempCast["id"]);
+                filmo.MovieId = Guid.Parse((string)tempCast["id"]);
                 filmo.Title = (string)tempCast["title"];
                 filmo.Character = (string)tempCast["character"];
 
-                genericRepository.Add(filmo);
+                _filmographyRepository.Add(filmo);
             }
             return filmo;
 
         }
 
-        private static async Task<String> makeRequest(string url)
+        private int ParseIdfromSearch(string response)
+        {
+            JObject json = JObject.Parse(response);
+            int id = int.Parse((string)json["results"][0]["id"]);
+            return id;
+        }
+
+        private async Task<String> makeRequest(string url)
         {
             using HttpResponseMessage response = await client.GetAsync(url);
-            response.EnsureSuccessStatusCode();
-            string responseBody = await response.Content.ReadAsStringAsync();
 
-            return responseBody;
+            if (response.StatusCode == HttpStatusCode.MovedPermanently)
+            {
+                System.Uri newUri = response.Headers.Location;
+                string str = newUri.ToString();
+                return makeRequest(str).Result;
+            }
+            else
+            {
+                response.EnsureSuccessStatusCode();
+                string responseBody = await response.Content.ReadAsStringAsync();
+
+                return responseBody;
+            }
+
+            
         }
+
+        
     }    
 }

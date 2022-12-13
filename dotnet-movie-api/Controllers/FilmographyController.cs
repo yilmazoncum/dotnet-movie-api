@@ -7,18 +7,29 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieApi.Data.Entities;
 using dotnet_movie_api.src.DataAccess;
-using dotnet_movie_api.src.Models;
 using MovieApi.ExternalApi;
+using MovieApi.DataAccess.DataAccess;
 
 namespace dotnet_movie_api.Controllers
 {
-    public class FilmographyController : GenericController<Filmography>
+    [Route("/[controller]")]
+    public class FilmographyController : Controller
     {
-        // GET: api/Filmography/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Filmography>> GetFilmography(int id)
+
+        IFilmographyRepository _repository;
+        ExternalApi _externalApi;
+
+        public FilmographyController(IFilmographyRepository repository, ExternalApi externalApi)
         {
-            var filmography = _repository.Get(id);
+            _repository = repository;
+            _externalApi = externalApi;
+        }
+
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Filmography>> GetFilmography(Guid id)
+        {
+            var filmography = _repository.GetwithGuid(id);
 
             if (filmography != null)
             {
@@ -28,7 +39,7 @@ namespace dotnet_movie_api.Controllers
             try
             {
                 Console.WriteLine("Filmography not found in DB -> external api");
-                return ExternalApi.GetFilmography(id).Result;
+                return _externalApi.GetFilmography(id).Result;
 
             }
             catch (Exception e)
@@ -40,7 +51,7 @@ namespace dotnet_movie_api.Controllers
         // PUT: api/Filmography/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutFilmography(int id, Filmography filmography)
+        public async Task<IActionResult> PutFilmography(Guid id, Filmography filmography)
         {
             if (id != filmography.MovieId)
             {
@@ -90,9 +101,9 @@ namespace dotnet_movie_api.Controllers
             return CreatedAtAction("GetFilmography", new { id = filmography.MovieId }, filmography);
         }
 
-        private bool FilmographyExists(int id)
+        private bool FilmographyExists(Guid id)
         {
-            if (_repository.Get(id) == null)
+            if (_repository.GetwithGuid(id) == null)
             {
                 return false;
             }

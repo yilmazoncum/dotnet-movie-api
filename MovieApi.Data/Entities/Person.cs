@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Mvc;
 
-namespace dotnet_movie_api.src.Models;
-
-public partial class Person
+namespace MovieApi.Data.Entities
 {
-    public DateTime? Birthday { get; set; }
-
-    public DateTime? Deathday { get; set; }
-
-    public int Id { get; set; }
-
-    public string? ImdbId { get; set; }
-
-    public string? KnownForDepartment { get; set; }
-
-    public string? Name { get; set; }
-
-    public string? PlaceOfBirth { get; set; }
+    [BindProperties]
+    public class Person
+    {
+        public Guid Id { get; set; }
+        public int? ApiId { get; set; }
+        public DateTime? Birthday { get; set; }
+        public DateTime? Deathday { get; set; }
+        public string? ImdbId { get; set; }
+        public string? KnownForDepartment { get; set; }
+        public string? Name { get; set; }
+        public string? PlaceOfBirth { get; set; }
+    }
 }

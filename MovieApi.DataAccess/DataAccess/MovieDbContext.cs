@@ -1,5 +1,4 @@
-﻿using dotnet_movie_api.src.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MovieApi.Data.Entities;
 
 namespace dotnet_movie_api.src.DataAccess;
@@ -17,8 +16,6 @@ public partial class MovieDbContext : DbContext
     }
 
     public virtual DbSet<Cast> Casts { get; set; }
-
-    public virtual DbSet<Genre> Genres { get; set; }
 
     public virtual DbSet<Movie> Movies { get; set; }
 
@@ -61,6 +58,9 @@ public partial class MovieDbContext : DbContext
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
                 .HasColumnName("id");
+            entity.Property(e => e.ApiId)
+                .ValueGeneratedNever()
+                .HasColumnName("api_id");
             entity.Property(e => e.Budget)
                 .HasMaxLength(32)
                 .IsUnicode(false)
@@ -125,6 +125,9 @@ public partial class MovieDbContext : DbContext
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
                 .HasColumnName("id");
+            entity.Property(e => e.ApiId)
+                .ValueGeneratedNever()
+                .HasColumnName("api_id");
             entity.Property(e => e.Birthday)
                 .HasColumnType("date")
                 .HasColumnName("birthday");

@@ -1,29 +1,42 @@
 ﻿using dotnet_movie_api.src.DataAccess;
-using dotnet_movie_api.src.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MovieApi.Data.Entities;
+using MovieApi.DataAccess.DataAccess;
 using MovieApi.ExternalApi;
 using System;
 
 namespace dotnet_movie_api.Controllers
 {
-    public class CastsController : GenericController<Cast>
+    [Route("/[controller]")]
+    public class CastsController : Controller
     {
-        // GET: api/Casts/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Cast>> GetCast(int id)
-        {
-            var person = _repository.Get(id);
+        IPersonRepository _personRepository;
+        ICastRepository _castRepository;
+        ExternalApi _externalApi;
 
-            if (person != null)
+        public CastsController(ICastRepository castRepository, IPersonRepository personRepository, ExternalApi externalApi) {
+
+            _castRepository = castRepository;
+            _personRepository = personRepository;
+
+            _externalApi = externalApi;
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Cast>> GetCast(Guid id)
+        {
+            var cast = _castRepository.GetwithGuid(id);
+
+            if (cast != null)
             {
-                return person;
+                return cast;
             }
 
             try
             {
                 Console.WriteLine("Cast not found in DB -> external api");
-                return ExternalApi.GetCast(id).Result;
+                return _externalApi.GetCast(id).Result;
 
             }
             catch (Exception e)
@@ -32,21 +45,17 @@ namespace dotnet_movie_api.Controllers
             }
         }
 
-        // PUT: api/Casts/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCast(int id, Cast cast)
+        public async Task<IActionResult> PutCast(Guid id, Cast cast)
         {
             if (id != cast.MovieId)
             {
                 return BadRequest();
             }
 
-            
-
             try
             {
-                _repository.Update(cast);
+                _castRepository.Update(cast);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -63,19 +72,17 @@ namespace dotnet_movie_api.Controllers
             return NoContent();
         }
 
-        // POST: api/Casts
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Cast>> PostCast(Cast cast)
         {
-            _repository.Add(cast);
+            _castRepository.Add(cast);
 
             return CreatedAtAction("GetCast", new { id = cast.MovieId }, cast);
         }
 
-        private bool CastExists(int id)
+        private bool CastExists(Guid id)
         {
-            if (_repository.Get(id) == null)
+            if (_castRepository.GetwithGuid(id) == null)
             {
                 return false;
             }

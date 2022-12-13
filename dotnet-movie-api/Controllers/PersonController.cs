@@ -1,24 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using dotnet_movie_api.src.DataAccess;
-using dotnet_movie_api.src.Models;
 using MovieApi.ExternalApi;
 using MovieApi.Data.Entities;
+using MovieApi.DataAccess.DataAccess;
+using System.Drawing;
 
 namespace dotnet_movie_api.Controllers
 {
-    public class PersonController : GenericController<Person>
-    {      
-        //// GET: api/Person/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Person>> GetPerson(int id)
+    [Route("/[controller]")]
+    public class PersonController : Controller
+    {
+
+        IPersonRepository _repository;
+        ExternalApi _externalApi;
+
+        public PersonController(IPersonRepository personRepository,ExternalApi externalApi)
         {
-            var person = _repository.Get(id);
+            _repository = personRepository;
+            _externalApi = externalApi;
+        }
+
+        [HttpGet("api/{apiId}")]
+        public async Task<ActionResult<Person>> GetPersonwithApiId(int apiId)
+        {
+            var person = _repository.GetwithApiId(apiId);
 
             if (person != null)
             {
@@ -27,7 +33,7 @@ namespace dotnet_movie_api.Controllers
             try
             {
                 Console.WriteLine("Person not found in DB -> external api");
-                return ExternalApi.GetPerson(id).Result;
+                return _externalApi.GetPerson(apiId).Result;
 
             }
             catch (Exception e)
@@ -36,44 +42,41 @@ namespace dotnet_movie_api.Controllers
             }
         }
 
-        // PUT: api/Person/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutPerson(int id, Person person)
+        [HttpGet("db/{guid}")]
+        public async Task<ActionResult<Person>> GetPersonwithGuid(Guid guid)
         {
-            if (id != person.Id)
-            {
-                return BadRequest();
-            }
+            var person = _repository.GetwithGuid(guid);
 
-            try
+            if (person != null)
             {
-                _repository.Update(person);
+                return person;
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PersonExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return NotFound() ;
         }
 
-        // POST: api/Person
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Person>> PostPerson(Person person)
+        [HttpPut("")]
+        public async Task<IActionResult> PutPerson([Bind] Person person)
         {
-
+            if (!PersonExists(person.Id))
+            {
+                return NotFound();
+            }
+            else
+            {
+                _repository.Update(person);
+                return Ok();
+            }
+        }
+        
+        [HttpPost("")]
+        public async Task<ActionResult<Person>> PostPerson([Bind] Person person)
+        {
+            
             try
             {
+                person.Id = Guid.NewGuid();
                 _repository.Add(person);
+                return Ok(person);
             }
             catch (DbUpdateException)
             {
@@ -87,15 +90,37 @@ namespace dotnet_movie_api.Controllers
                 }
             }
 
-            return CreatedAtAction("GetPerson", new { id = person.Id }, person);
+            
         }
-        private bool PersonExists(int id)
+
+        [HttpGet]
+        public ActionResult<IEnumerable<Person>> GetList()
         {
-            if (_repository.Get(id) == null)
+            //logger.LogInformation("Get list : " + typeof(T));
+            return _repository.GetList();
+        }
+
+        [HttpDelete("")]
+        public ActionResult Delete(Guid id)
+        {
+            Person person = _repository.GetwithGuid(id);
+            if (person == null)
+            {
+                return NotFound();
+            }
+
+            _repository.Delete(person);
+            return Ok();
+
+        }
+        private bool PersonExists(Guid id)
+        {
+            if (_repository.GetwithGuid(id) == null)
             {
                 return false;
             }
             return true;
         }
+
     }
 }
