@@ -26,8 +26,7 @@
             ctx.SaveChanges();
         }
 
-        public  T GetwithGuid(Guid id)
-        {      
+        public T GetwithGuid(Guid id) { 
             return ctx.Set<T>().Find(id);           
         }
 

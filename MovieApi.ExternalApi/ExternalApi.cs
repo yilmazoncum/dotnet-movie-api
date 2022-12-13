@@ -48,6 +48,8 @@ namespace MovieApi.ExternalApi
             movie.Id = Guid.NewGuid();
             _movieRepository.Add(movie);
 
+            GetCast(id,movie.Id);
+
             return movie;
            
         }
@@ -64,32 +66,26 @@ namespace MovieApi.ExternalApi
             person.Id = Guid.NewGuid();
             _personRepository.Add(person);
 
+            GetFilmography(id,person.Id);
+
             return person;
     
         }
 
-        public async Task<Cast> GetCast(Guid id)
+        private async void GetCast(int id, Guid movie_id)
         {
             string currentUrl = baseUrl + "movie/" + id.ToString() + "/credits" + "?api_key=" + apiKey;
-
             Console.WriteLine("External Api triggered");
-
-            Cast cast = new Cast();
-            cast = ParseCastJson(makeRequest(currentUrl).Result);
-
-            return cast;
+            ParseCastJson(makeRequest(currentUrl).Result, movie_id);
         }
 
-        public async Task<Filmography> GetFilmography(Guid id)
+        private async void GetFilmography(int api_id, Guid person_id)
         {
-            string currentUrl = baseUrl + "person/" + id.ToString() + "/movie_credits" + "?api_key=" + apiKey;
+            string currentUrl = baseUrl + "person/" + api_id.ToString() + "/movie_credits" + "?api_key=" + apiKey;
             
             Console.WriteLine("External Api triggered");
             
-            Filmography filmo = new Filmography();
-            filmo = ParseFilmographyJson(makeRequest(currentUrl).Result,id);
-
-            return filmo;
+            ParseFilmographyJson(makeRequest(currentUrl).Result,person_id);
         }
 
         public async Task<int> SearchMovie(string str)
@@ -168,44 +164,39 @@ namespace MovieApi.ExternalApi
    
         }
 
-        private Cast ParseCastJson(string response)
+        private void ParseCastJson(string response, Guid movie_id)
         {
 
             JObject json = JObject.Parse(response);
             Cast cast = new Cast();
 
-            cast.MovieId = Guid.Parse(json.Property("id").Value.ToString());
+            cast.MovieId = movie_id;
             for (int i = 0; i < 10; i++)
             {
                 JToken tempCast = json["cast"][i];
-                cast.PersonId = Guid.Parse((string)tempCast["id"]);
                 cast.Name =(string)tempCast["name"];
                 cast.KnownForDepartment = (string)tempCast["known_for_department"];
                 cast.Character = (string)tempCast["character"];
 
                 _castRepository.Add(cast);
             }
-            return cast;
         }
 
-        private Filmography ParseFilmographyJson(string response, Guid id)
+        private void ParseFilmographyJson(string response, Guid person_id)
         {
 
             JObject json = JObject.Parse(response);
-            Filmography filmo = new Filmography();
-            
+            Filmography filmo = new Filmography();  
 
-            filmo.PersonId = id;
+            filmo.PersonId = person_id;
             for (int i = 0; i < 10; i++)
             {
                 JToken tempCast = json["cast"][i];
-                filmo.MovieId = Guid.Parse((string)tempCast["id"]);
                 filmo.Title = (string)tempCast["title"];
                 filmo.Character = (string)tempCast["character"];
 
                 _filmographyRepository.Add(filmo);
             }
-            return filmo;
 
         }
 
@@ -220,6 +211,7 @@ namespace MovieApi.ExternalApi
         {
             using HttpResponseMessage response = await client.GetAsync(url);
 
+            //recursive :)
             if (response.StatusCode == HttpStatusCode.MovedPermanently)
             {
                 System.Uri newUri = response.Headers.Location;

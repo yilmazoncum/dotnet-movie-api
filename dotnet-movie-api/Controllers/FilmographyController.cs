@@ -27,22 +27,14 @@ namespace dotnet_movie_api.Controllers
 
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Filmography>> GetFilmography(Guid id)
+        public async Task<ActionResult<List<Filmography>>> GetFilmography(Guid id)
         {
-            var filmography = _repository.GetwithGuid(id);
-
-            if (filmography != null)
-            {
-                return filmography;
-            }
-
             try
             {
-                Console.WriteLine("Filmography not found in DB -> external api");
-                return _externalApi.GetFilmography(id).Result;
+                return _repository.GetFilmographyList(id);
 
             }
-            catch (Exception e)
+            catch
             {
                 return NotFound();
             }

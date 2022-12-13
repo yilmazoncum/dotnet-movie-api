@@ -5,7 +5,10 @@ namespace MovieApi.DataAccess.DataAccess
 {
     public class MovieRepository : GenericRepository<Movie>, IMovieRepository 
     {
-        public MovieRepository(MovieDbContext context) : base(context) { }
+        private readonly MovieDbContext ctx;
+        public MovieRepository(MovieDbContext context) : base(context) {
+            ctx = context;
+        }
 
         public Movie GetwithApiId(int id)
         {

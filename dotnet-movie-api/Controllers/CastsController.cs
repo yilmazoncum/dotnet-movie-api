@@ -24,25 +24,18 @@ namespace dotnet_movie_api.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Cast>> GetCast(Guid id)
+        public async Task<ActionResult<List<Cast>>> GetCast(Guid id)
         {
-            var cast = _castRepository.GetwithGuid(id);
-
-            if (cast != null)
-            {
-                return cast;
-            }
-
             try
             {
-                Console.WriteLine("Cast not found in DB -> external api");
-                return _externalApi.GetCast(id).Result;
+                return _castRepository.GetCastsList(id);
 
             }
-            catch (Exception e)
+            catch
             {
                 return NotFound();
             }
+        
         }
 
         [HttpPut("{id}")]

@@ -5,5 +5,6 @@ namespace MovieApi.DataAccess.DataAccess
 {
     public interface IFilmographyRepository : IGenericRepository<Filmography>
     {
+        List<Filmography> GetFilmographyList(Guid id);
     }
 }

@@ -8,6 +8,7 @@
         void Update(T t);
         void Delete(T t);
         T GetwithGuid(Guid id);
+
         
     }
 }
