@@ -93,7 +93,7 @@ namespace dotnet_movie_api.Controllers
             
         }
 
-        [HttpGet]
+        [HttpGet("list")]
         public ActionResult<IEnumerable<Person>> GetList()
         {
             //logger.LogInformation("Get list : " + typeof(T));

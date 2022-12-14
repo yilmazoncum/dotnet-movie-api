@@ -173,6 +173,7 @@ namespace MovieApi.ExternalApi
             cast.MovieId = movie_id;
             for (int i = 0; i < 10; i++)
             {
+                cast.id = new System.Guid();
                 JToken tempCast = json["cast"][i];
                 cast.Name =(string)tempCast["name"];
                 cast.KnownForDepartment = (string)tempCast["known_for_department"];
@@ -191,6 +192,7 @@ namespace MovieApi.ExternalApi
             filmo.PersonId = person_id;
             for (int i = 0; i < 10; i++)
             {
+                filmo.id = new System.Guid();
                 JToken tempCast = json["cast"][i];
                 filmo.Title = (string)tempCast["title"];
                 filmo.Character = (string)tempCast["character"];

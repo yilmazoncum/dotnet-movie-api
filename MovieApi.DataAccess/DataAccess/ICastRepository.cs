@@ -5,7 +5,6 @@ namespace MovieApi.DataAccess.DataAccess
 {
     public interface ICastRepository : IGenericRepository<Cast>
     {
-
         List<Cast> GetCastsList(Guid id);
     }
 }

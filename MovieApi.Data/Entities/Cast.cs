@@ -7,5 +7,6 @@
         public string? Name { get; set; }
         public string? KnownForDepartment { get; set; }
         public string? Character { get; set; }
+        public Guid id { get; set; }
     }
 }

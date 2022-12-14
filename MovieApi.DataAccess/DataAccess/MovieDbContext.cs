@@ -33,8 +33,6 @@ public partial class MovieDbContext : DbContext
     {
         modelBuilder.Entity<Cast>(entity =>
         {
-            entity.HasKey(e => e.MovieId).HasName("PK__Casts__42EB372EDAA0394D");
-
             entity.Property(e => e.Character)
                 .HasMaxLength(30)
                 .IsUnicode(false)
@@ -43,12 +41,17 @@ public partial class MovieDbContext : DbContext
                 .HasMaxLength(30)
                 .IsUnicode(false)
                 .HasColumnName("known_for_department");
-            entity.Property(e => e.MovieId).HasColumnName("movieID");
+            entity.Property(e => e.MovieId)
+            .HasColumnName("movieID");
             entity.Property(e => e.Name)
                 .HasMaxLength(30)
                 .IsUnicode(false)
                 .HasColumnName("name");
-            entity.Property(e => e.PersonId).HasColumnName("personID");
+            entity.Property(e => e.id)
+            .HasColumnName("id");
+
+            entity.Property(e => e.PersonId)
+            .HasColumnName("personID");
         });
 
         modelBuilder.Entity<Movie>(entity =>
@@ -98,7 +101,7 @@ public partial class MovieDbContext : DbContext
 
         modelBuilder.Entity<Filmography>(entity =>
         {
-            entity.HasKey(e => e.MovieId).HasName("PK__Filmogra__42EB372E34A92F1F");
+            entity.HasKey(e => e.id).HasName("PK__Filmogra__3213E83FDEB95B7E");
 
             entity.ToTable("Filmographies");
 
@@ -116,6 +119,9 @@ public partial class MovieDbContext : DbContext
                 .HasMaxLength(30)
                 .IsUnicode(false)
                 .HasColumnName("title");
+            entity.Property(e => e.id).HasColumnName("id");
+
+            
         });
 
         modelBuilder.Entity<Person>(entity =>
